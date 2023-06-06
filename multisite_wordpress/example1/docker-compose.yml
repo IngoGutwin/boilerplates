@@ -1,0 +1,54 @@
+version: '3.8'
+
+
+networks:
+  # enable connection with Traefik
+  traefik:
+    external: true
+  # network for the app
+  backend:
+    name: ${PROJECT_NAME}
+
+services:
+
+  example-service1: # name the sevice as your projectinagutwin_fotografie:
+
+    env_file:
+      - ./.env
+    container_name: ${PROJECT_NAME} 
+    image: wordpress:php8.1-apache
+    depends_on:
+      - mysql
+    restart: always
+    expose:
+      - 80
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: ${PROJECT_NAME} 
+      WORDPRESS_DB_NAME: ${PROJECT_NAME} 
+      WORDPRESS_DB_PASSWORD : ${PASSWORD} 
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.${PROJECT_NAME}.rule=Host(`${DOMAIN}`)
+    volumes:
+      - ./wordpress:/var/www/html/
+    networks: 
+      - backend
+      - traefik
+
+  mysql:
+    container_name: ${DB_NAME}
+    image: mysql:8.0.22
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${PROJECT_NAME} 
+      MYSQL_USER: ${PROJECT_NAME}
+      MYSQL_PASSWORD: ${PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${PASSWORD} 
+    volumes:
+    # Here, the database files are linked into a directory for direct access
+    # You probably prefer to use a docker volume instead
+      - ./db:/var/lib/mysql
+    networks: 
+      - backend

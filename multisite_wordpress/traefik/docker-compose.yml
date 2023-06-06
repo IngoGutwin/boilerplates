@@ -1,0 +1,35 @@
+version: '3.3'
+
+networks:
+  # Allow the use of traefik in other docker-compose.yml files
+  traefik:
+    external: true
+
+services:
+
+  traefik:
+
+    image: traefik:v2.10
+
+    container_name: "traefik"
+
+    restart: always
+
+    command: 
+      --api.insecure=true 
+      --providers.docker=true
+      --providers.docker.exposedbydefault=false
+      --providers.docker.network=traefik
+      --entrypoints.http.address=:80
+      
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    ports:
+      - 80:80
+      - 8080:8080
+
+    networks:
+      - traefik 
+
+      
